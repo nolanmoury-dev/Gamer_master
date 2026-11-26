@@ -1,12 +1,12 @@
 const c=require('crypto'),U=process.env.SUPABASE_URL+'/rest/v1/',K=process.env.SUPABASE_SERVICE_KEY,S=process.env.SECRET||'dev';
-const db=async(m,t,q='',b)=>{const r=await fetch(U+t+q,{method:m,headers:{apikey:K,Authorization:'Bearer '+K,'Content-Type':'application/json',Prefer:'return=representation'},body:b?JSON.stringify(b):undefined}),x=await r.text();if(!r.ok)throw Error(x);return x?JSON.parse(x):[]};
+const db=async(m,t,q='',b)=>{const r=await fetch(U+t+q,{method:m,headers:{apikey:K,...(K.startsWith('eyJ')?{Authorization:'Bearer '+K}:{}),'Content-Type':'application/json',Prefer:'return=representation'},body:b?JSON.stringify(b):undefined}),x=await r.text();if(!r.ok)throw Error(x);return x?JSON.parse(x):[]};
 const sg=s=>c.createHmac('sha256',S).update(s).digest('hex');
 const mk=id=>{const p=id+'.'+(Date.now()+6048e5);return p+'.'+sg(p)};
 const ck=t=>{const[a,b,x]=String(t||'').split('.');return x&&sg(a+'.'+b)===x&&+b>Date.now()?a:null};
 const hs=(p,s=c.randomBytes(16).toString('hex'))=>s+':'+c.scryptSync(p,s,32).toString('hex');
 const same=(p,h)=>{const e=hs(p,h.split(':')[0]);return e.length===h.length&&c.timingSafeEqual(Buffer.from(e),Buffer.from(h))};
 const E=encodeURIComponent,str=(v,n)=>String(v??'').trim().slice(0,n);
-module.exports=async(req,res)=>{try{res.json(await run(req.body||{}))}catch(e){res.status(500).json({err:'server'})}};
+module.exports=async(req,res)=>{try{res.json(await run(req.body||{}))}catch(e){console.error('API',e.message);res.status(500).json({err:'server',why:String(e.message).slice(0,200)})}};
 async function run({a,t,...d}){
 if(a==='tip'){const r=await db('GET','tips','?active=eq.true&lang=eq.'+(d.lang==='en'?'en':'fr'));return{tip:r[Math.random()*r.length|0]||null}}
 if(a==='signup'||a==='login'){const p=str(d.pseudo,20),pw=String(d.pass||'');
