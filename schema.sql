@@ -1,0 +1,10 @@
+create table users(id uuid primary key default gen_random_uuid(),pseudo text unique not null,pass text not null,lang text default 'fr',role text default 'player',banned_until timestamptz,ban_reason text,last_game text,created_at timestamptz default now());
+create table sites(id uuid primary key default gen_random_uuid(),name text not null,url text not null,descr text default '',kind text default 'site',available boolean default true,created_at timestamptz default now());
+create table clicks(id bigserial primary key,site_id uuid references sites(id) on delete cascade,pseudo text,ok boolean,at timestamptz default now());
+create table tips(id uuid primary key default gen_random_uuid(),lang text default 'fr',title text,body text,code text,active boolean default true);
+create table scores(game text primary key,pseudo text,score int);
+create table bugs(id bigserial primary key,pseudo text,game text,msg text,at timestamptz default now());
+create table settings(k text primary key,v text);
+insert into settings values('maintenance','0'),('demo','0');
+insert into tips(lang,title,body,code) values('fr','Astuce HTML','Dans un paragraphe, oublie la balise fermante : utilise <br> pour aller à la ligne.','<p>Ligne 1<br>Ligne 2</p>');
+alter table users enable row level security;alter table sites enable row level security;alter table clicks enable row level security;alter table tips enable row level security;alter table scores enable row level security;alter table bugs enable row level security;alter table settings enable row level security;
